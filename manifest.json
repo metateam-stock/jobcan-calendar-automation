@@ -1,0 +1,27 @@
+{
+   "action": {
+      "default_icon": "icon_kin_128.png",
+      "default_popup": "popup.html"
+   },
+   "description": "カレンダーで選択した日付のリモート申請を一括で行います",
+   "icons": {
+      "128": "icon_kin_128.png"
+   },
+   "permissions": [
+      "tabs",
+      "activeTab",
+      "scripting"
+  ],
+   "host_permissions": [
+      "<all_urls>"
+   ],
+   "content_scripts": [
+      {
+         "matches": [ "https://ssl.jobcan.jp/m/work/*" ],
+         "js": [ "calendar.js" ]
+      }
+  ],
+   "manifest_version": 3,
+   "name": "ジョブカンカレンダー リモート一括申請",
+   "version": "1.0"
+}
