@@ -140,9 +140,26 @@ document.addEventListener('DOMContentLoaded', function () {
                             null,
                             XPathResult.FIRST_ORDERED_NODE_TYPE,
                             null
-                          ).singleNodeValue;
+                        ).singleNodeValue;
 
-                        if (selectElement && saveElement) {
+                        // "リモート勤務" という文字列を含む option 要素を探す
+                        let approvedElement = document.evaluate(
+                            '//*[@id="approved_selection"]/option[contains(text(), "リモート勤務")]',
+                            document,
+                            null,
+                            XPathResult.FIRST_ORDERED_NODE_TYPE,
+                            null
+                        ).singleNodeValue;
+
+                        let applyElement = document.evaluate(
+                            '//*[@id="apply_selection"]/option[contains(text(), "リモート勤務")]',
+                            document,
+                            null,
+                            XPathResult.FIRST_ORDERED_NODE_TYPE,
+                            null
+                        ).singleNodeValue;
+
+                        if (selectElement && saveElement && !approvedElement && !applyElement) {
                             // 2番目のoptionを選択する
                             selectElement.selectedIndex = 1;
                             // 選択が変更された場合、イベントをトリガーする
