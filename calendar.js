@@ -131,8 +131,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 chrome.scripting.executeScript({
                     target: { tabId: tabs[0].id },
                     func: (date) => {
-                        // "new_selection" という id を持つ select 要素を探す
-                        let selectElement = document.querySelector('#new_selection');
+                        // リモート勤務申請（承認必要）のXPathを厳密に指定
+                        var remoteXpath = "//div[@class='selectRemarkArea']/div[@class='remark_name card-header jbc-card-header' and contains(text(), 'リモート勤務申請')]/following-sibling::div[@class='selectBox jbc-card']/select[@class='remark_selectBox remark_change_selectBox new_selection maxRemove']";
+
+                        // XPathを評価し、該当する要素を取得
+                        var result = document.evaluate(remoteXpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+
+                        // 取得した要素を変数に格納
+                        var selectElement = result.singleNodeValue;
 
                         let saveElement = document.evaluate(
                             '//*[@id="insert_button_selection_remarks"]',
