@@ -8,8 +8,6 @@ const config = {
     show: 1, // 表示するカレンダーの月数
 }
 
-
-
 function showCalendar(year, month) {
     for (i = 0; i < config.show; i++) {
         const calendarHtml = createCalendar(year, month)
@@ -116,12 +114,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     showCalendar(year, month)
 
-
     // 送信ボタンを取得
     document.querySelector('#start').addEventListener('click', async () => {
+        // popup.htmlのフォームからcustomerNameとprojectNameの値を取得
+        const customerName = document.getElementById('customerName').value;
+        const projectName = document.getElementById('projectName').value;
+
+        // 入力チェック
+        if (!customerName || !projectName) {
+            alert('顧客名とプロジェクト名を入力してください。');
+            return; // 処理を中断
+        }
+
         for (let date of selectedDates) {
             let convertedDate = convertDate(date);
             let url = `https://ssl.jobcan.jp/m/work/accessrecord?recordDay=${convertedDate}`;
+
             // 指定のURLに遷移する
             await chrome.tabs.update({ url: url });
             // 3秒待機
@@ -130,8 +138,13 @@ document.addEventListener('DOMContentLoaded', function () {
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 chrome.scripting.executeScript({
                     target: { tabId: tabs[0].id },
-                    func: (date) => {
-                        // リモート勤務申請（承認必要）のXPathを厳密に指定
+                    // 引数として customer と project を受け取るように変更
+                    func: (selectedDate, customer, project) => {
+                        let commentText = '';
+                        if (customer && project) {
+                            commentText = `${customer}:${project}`;
+                        }
+
                         var remoteXpath = "//div[@class='selectRemarkArea']/div[@class='remark_name card-header jbc-card-header' and contains(text(), 'リモート勤務申請')]/following-sibling::div[@class='selectBox jbc-card']/select[@class='remark_selectBox remark_change_selectBox new_selection maxRemove']";
 
                         // XPathを評価し、該当する要素を取得
@@ -165,20 +178,32 @@ document.addEventListener('DOMContentLoaded', function () {
                             null
                         ).singleNodeValue;
 
+                        // 申請用コメントの要素を格納
+                        let commentElement = document.evaluate(
+                            '//div[@id="comment_1"]/textarea[@id="1"]',
+                            document,
+                            null,
+                            XPathResult.FIRST_ORDERED_NODE_TYPE,
+                            null
+                        ).singleNodeValue;
+
                         if (selectElement && saveElement && !approvedElement && !applyElement) {
                             // 2番目のoptionを選択する
                             selectElement.selectedIndex = 1;
                             // 選択が変更された場合、イベントをトリガーする
                             let changeEvent = new Event('change', { bubbles: true });
                             selectElement.dispatchEvent(changeEvent);
+                            // 申請用コメントを設定する
+                            // 組み立てた commentText を使用
+                            commentElement.value = commentText;
                             // 保存ボタンをクリックする
                             saveElement.click();
-                            console.log('申請しました:' + date);
+                            console.log('申請しました:' + selectedDate);
                         } else {
-                            console.error('申請に失敗しました:' + date);
+                            console.error('申請に失敗しました:' + selectedDate);
                         }
                     },
-                    args: [date]
+                    args: [date, customerName, projectName] // 取得した値を引数として渡す
                 });
             });
             // 2秒待機
