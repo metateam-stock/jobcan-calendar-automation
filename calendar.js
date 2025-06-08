@@ -120,6 +120,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const customerName = document.getElementById('customerName').value;
         const projectName = document.getElementById('projectName').value;
 
+        // 入力チェック
+        if (!customerName || !projectName) {
+            alert('顧客名とプロジェクト名を入力してください。');
+            return; // 処理を中断
+        }
+
         for (let date of selectedDates) {
             let convertedDate = convertDate(date);
             let url = `https://ssl.jobcan.jp/m/work/accessrecord?recordDay=${convertedDate}`;
